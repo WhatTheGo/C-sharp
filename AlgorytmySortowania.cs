@@ -259,11 +259,6 @@ namespace AlgorytmySortowania
             posortowane.Text = ListToString100(tab1);
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void CountingSortButton_Click(object sender, EventArgs e)
         {
             CountingSort(tab1);
