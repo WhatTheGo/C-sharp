@@ -2,6 +2,7 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include <memory>
 using namespace std;
 
 
@@ -9,26 +10,29 @@ class Kratka {
     public:
     int x;
     int y;
-    float g;    // Koszt dotarcia do kratki
-    float f;    // Funkcja f = g + h
-    Kratka* rodzic{};   // Klamerki są dlatego że inaczej nie działa
+    float g{};    // Koszt dotarcia do kratki
+    float f{};    // Funkcja f = g + h
+    int rodzic_x;
+    int rodzic_y;
 
     Kratka(const int x, const int y) {  // Konstruktor bez rodzica na potrzeby kratki start
         this->x = x;
         this->y = y;
     }
 
-    Kratka(const int x, const int y, Kratka* rodzic, float g, float f) {  // Każda kratka dodawana do listy otwartej potrzebuje rodzica
+    Kratka(const int x, const int y, int rodzic_x, int rodzic_y, float g, float f) {  // Każda kratka dodawana do listy otwartej potrzebuje rodzica
         this->x = x;
         this->y = y;
-        this->rodzic = rodzic;
+        this->rodzic_x = rodzic_x;
+        this->rodzic_y = rodzic_y;
         this->g = g;
         this->f = f;
     }
 };
 
-
-int arr[10][10] = {
+const int h = 6;
+const int w = 6;
+int arr[h][w] = {
     {0, 0, 0, 0, 0, 0},
     {0, 5, 0, 0, 0, 0},
     {0, 0, 5, 0, 0, 0},
@@ -39,7 +43,7 @@ int arr[10][10] = {
 Kratka start(2, 1);
 Kratka cel(1, 5);
 vector<Kratka> otwarta;
-vector<Kratka> zamknieta = {start};
+vector<Kratka> zamknieta;
 
 
 float wylicz_f(float g, float h) {
@@ -77,19 +81,20 @@ int sprawdz_sasiada(int x, int y) {
 }
 
 
-void dodaj_sasiada(int x, int y, Kratka aktualna_kratka) {  // Jeżeli możliwe dodaje do listy otwartej
+void dodaj_sasiada(int x, int y, Kratka& aktualna_kratka) {  // Jeżeli możliwe dodaje do listy otwartej
     float g = aktualna_kratka.g + 1;
     float h = wylicz_h(x, y);
     float f = wylicz_f(g, h);
     int mozna_dodac = sprawdz_sasiada(x, y);
 
     if (mozna_dodac == 1) {
-        otwarta.push_back(Kratka(x, y, &aktualna_kratka, g, f));
+        otwarta.push_back(Kratka(x, y, aktualna_kratka.x, aktualna_kratka.y, g, f));
     }
     else if (mozna_dodac != -1 && f < otwarta[mozna_dodac].f) {   // Jeżeli f mniejsze to nowy rodzic i f
         otwarta[mozna_dodac].f = f;
         otwarta[mozna_dodac].g = g;
-        otwarta[mozna_dodac].rodzic = &aktualna_kratka;
+        otwarta[mozna_dodac].rodzic_x = aktualna_kratka.x;
+        otwarta[mozna_dodac].rodzic_y = aktualna_kratka.y;
     }
 }
 
@@ -112,7 +117,19 @@ int znajdz_kratka_z_min_f() {
 }
 
 
+Kratka znajdz_kratka(int x, int y) {
+    for (int i = 0; i < zamknieta.size(); i++) {
+        if (zamknieta[i].x == x && zamknieta[i].y == y) {
+            return zamknieta[i];
+        }
+    }
+    cout << "nie znaleziono kratki" << endl;
+    return zamknieta[0];
+}
+
+
 int main() {
+    zamknieta.push_back(start);
     if (arr[start.x][start.y] == 5) {
         printf("start jest na niedozwolonym polu (5)");
         return 0;
@@ -121,6 +138,8 @@ int main() {
         printf("Start jest w tym samym miejscu co cel");
         return 0;
     }
+
+
     start.g = 0;
     start.f = 0;
     int x = start.x;
@@ -135,10 +154,18 @@ int main() {
     while (!czy_cel_osiagniety && !czy_pusta) {
 
         // dodawanie do listy otwartej kratki rozważane jako pola do ekspansji góra, dół, lewo, prawo
-        dodaj_sasiada(x - 1, y, aktualna_kratka);
-        dodaj_sasiada(x + 1, y, aktualna_kratka);
-        dodaj_sasiada(x, y - 1, aktualna_kratka);
-        dodaj_sasiada(x, y + 1, aktualna_kratka);
+        if (x - 1 >= 0) {
+            dodaj_sasiada(x - 1, y, aktualna_kratka);
+        }
+        if (x + 1 < w) {
+            dodaj_sasiada(x + 1, y, aktualna_kratka);
+        }
+        if (y - 1 >= 0) {
+            dodaj_sasiada(x, y - 1, aktualna_kratka);
+        }
+        if (y + 1 < h) {
+            dodaj_sasiada(x, y + 1, aktualna_kratka);
+        }
 
         // Dodaj kratke z najmniejszą wartością f do zamkniętej i usuń z otwartej
         // Zaktualizuj aktualną kratkę
@@ -159,14 +186,15 @@ int main() {
     }
 
     vector<Kratka> droga;
-    while (aktualna_kratka.x != start.x && aktualna_kratka.y != start.y) {
+    while (aktualna_kratka.x != start.x || aktualna_kratka.y != start.y) {
         droga.push_back(aktualna_kratka);
-        aktualna_kratka = aktualna_kratka.rodzic;
+        aktualna_kratka = znajdz_kratka(aktualna_kratka.rodzic_x, aktualna_kratka.rodzic_y);
     }
+    droga.push_back(aktualna_kratka);
 
-    for (int i = 0; i < droga.size(); i++) {
+    for (int i = droga.size() - 1; i > 0; i--) {
         printf("(%d, %d) -> ", droga[i].x, droga[i].y);
     }
-
+    printf("(%d, %d)", droga[0].x, droga[0].y);
     return 0;
 }
