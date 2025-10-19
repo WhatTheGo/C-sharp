@@ -1,8 +1,6 @@
 #include <cmath>
 #include <iostream>
-#include <math.h>
 #include <vector>
-#include <memory>
 #include <fstream>
 #include <sstream>
 using namespace std;
@@ -136,8 +134,8 @@ void wypisz_tablice(int h, int w) {
 int main() {
     start.x = 8;
     start.y = 3;
-    cel.x = 19;
-    cel.y = 18;
+    cel.x = 1;
+    cel.y = 19;
 
     start.g = 0;
     start.f = 0;
@@ -170,7 +168,11 @@ int main() {
     wypisz_tablice(h, w);
 
     if (arr[start.x][start.y] == 5) {
-        printf("start jest na niedozwolonym polu (5)");
+        printf("Start jest na niedozwolonym polu (5)");
+        return 0;
+    }
+    if (arr[cel.x][cel.y] == 5) {
+        printf("Cel jest na niedozwolonym polu (5)");
         return 0;
     }
     if (start.x == cel.x && start.y == cel.y) {
