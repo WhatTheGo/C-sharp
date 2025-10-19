@@ -33,7 +33,6 @@ class Kratka {
 };
 
 
-
 vector<vector<int>> arr;
 Kratka start(0, 0);
 Kratka cel(0, 0);
@@ -123,11 +122,22 @@ Kratka znajdz_kratka(int x, int y) {
 }
 
 
+void wypisz_tablice(int h, int w) {
+    cout << "Zawartosc tablicy:" << endl;
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            cout << arr[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
 int main() {
-    start.x = 2;
-    start.y = 1;
-    cel.x = 1;
-    cel.y = 5;
+    start.x = 8;
+    start.y = 3;
+    cel.x = 19;
+    cel.y = 18;
 
     start.g = 0;
     start.f = 0;
@@ -138,7 +148,7 @@ int main() {
     Kratka aktualna_kratka = start;
     zamknieta.push_back(start);
 
-    ifstream plik("grid.txt");
+    ifstream plik("grid1.txt");
     string linia;
 
     // wczytywanie do wektora
@@ -157,13 +167,7 @@ int main() {
     int h = arr.size();
     int w = arr[0].size();
 
-    cout << "Zawartosc tablicy:" << endl;
-    for (int i = 0; i < h; i++) {
-        for (int j = 0; j < w; j++) {
-            cout << arr[i][j] << " ";
-        }
-        cout << endl;
-    }
+    wypisz_tablice(h, w);
 
     if (arr[start.x][start.y] == 5) {
         printf("start jest na niedozwolonym polu (5)");
@@ -221,8 +225,11 @@ int main() {
 
     for (int i = droga.size() - 1; i > 0; i--) {
         printf("(%d, %d) -> ", droga[i].x, droga[i].y);
+        arr[droga[i].x][droga[i].y] = 3;
     }
-    printf("(%d, %d)", droga[0].x, droga[0].y);
+    printf("(%d, %d) \n", droga[0].x, droga[0].y);
+    arr[droga[0].x][droga[0].y] = 3;
+    wypisz_tablice(h, w);
 
     return 0;
 }
