@@ -34,18 +34,9 @@ class Kratka {
 
 
 
-const int h = 6;
-const int w = 6;
-int arr[h][w] = {
-    {0, 0, 0, 0, 0, 0},
-    {0, 5, 0, 0, 0, 0},
-    {0, 0, 5, 0, 0, 0},
-    {0, 0, 0, 5, 0, 0},
-    {0, 0, 0, 0, 5, 0},
-    {0, 0, 0, 0, 0, 0}
-};
-Kratka start(2, 1);
-Kratka cel(1, 5);
+vector<vector<int>> arr;
+Kratka start(0, 0);
+Kratka cel(0, 0);
 vector<Kratka> otwarta;
 vector<Kratka> zamknieta;
 
@@ -133,7 +124,47 @@ Kratka znajdz_kratka(int x, int y) {
 
 
 int main() {
+    start.x = 2;
+    start.y = 1;
+    cel.x = 1;
+    cel.y = 5;
+
+    start.g = 0;
+    start.f = 0;
+    int x = start.x;
+    int y = start.y;
+    float f;
+    int numer;
+    Kratka aktualna_kratka = start;
     zamknieta.push_back(start);
+
+    ifstream plik("grid.txt");
+    string linia;
+
+    // wczytywanie do wektora
+    while (getline(plik, linia)) {
+        stringstream ss(linia);
+        vector<int> wiersz;
+        int liczba;
+        while (ss >> liczba) {
+            wiersz.push_back(liczba);
+        }
+        arr.push_back(wiersz);
+    }
+
+    plik.close();
+
+    int h = arr.size();
+    int w = arr[0].size();
+
+    cout << "Zawartosc tablicy:" << endl;
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            cout << arr[i][j] << " ";
+        }
+        cout << endl;
+    }
+
     if (arr[start.x][start.y] == 5) {
         printf("start jest na niedozwolonym polu (5)");
         return 0;
@@ -143,14 +174,6 @@ int main() {
         return 0;
     }
 
-
-    start.g = 0;
-    start.f = 0;
-    int x = start.x;
-    int y = start.y;
-    float f;
-    int numer;
-    Kratka aktualna_kratka = start;
 
     // szukanie najkrótszej drogi
     bool czy_cel_osiagniety = false;
@@ -200,5 +223,6 @@ int main() {
         printf("(%d, %d) -> ", droga[i].x, droga[i].y);
     }
     printf("(%d, %d)", droga[0].x, droga[0].y);
+
     return 0;
 }
