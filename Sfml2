@@ -1,0 +1,112 @@
+        // Start wizualizacji
+        // (Wstawione jednorazowo: include i statyczne okno, aby nie kolidować z resztą programu.)
+        #include <SFML/Graphics.hpp>
+
+        {
+            static bool __sfml_inited = false;
+            static sf::RenderWindow* __sfml_window = nullptr;
+            const int cellSize = 30;
+
+            if (!__sfml_inited) {
+                // Tworzymy okno tylko raz
+                __sfml_window = new sf::RenderWindow(sf::VideoMode(w * cellSize, h * cellSize), "A* Wizualizacja - SFML");
+                __sfml_inited = true;
+            }
+
+            if (__sfml_window && __sfml_window->isOpen()) {
+                sf::Event event;
+                while (__sfml_window->pollEvent(event)) {
+                    if (event.type == sf::Event::Closed) {
+                        __sfml_window->close();
+                    }
+                }
+
+                // Odtworzenie aktualnej drogi (tak jak wcześniej)
+                krata_do_szukania = aktualna_kratka;
+                droga.clear();
+                // Jeżeli aktualna_kratka nie ma rodzica poprawnie ustawionego dla startu,
+                // pętla zakończy się natychmiast (droga będzie zawierać tylko start).
+                while (krata_do_szukania.x != start.x || krata_do_szukania.y != start.y) {
+                    droga.push_back(krata_do_szukania);
+                    krata_do_szukania = znajdz_kratka(krata_do_szukania.rodzic_x, krata_do_szukania.rodzic_y);
+                }
+                droga.push_back(krata_do_szukania);
+
+                // Rysowanie siatki tła
+                __sfml_window->clear(sf::Color::Black);
+
+                for (int row = 0; row < h; ++row) {
+                    for (int col = 0; col < w; ++col) {
+                        sf::RectangleShape cell(sf::Vector2f(cellSize - 1, cellSize - 1));
+                        cell.setPosition(col * cellSize, row * cellSize);
+
+                        if (arr[row][col] == 5) {
+                            // przeszkoda
+                            cell.setFillColor(sf::Color(80, 80, 80));
+                        } else {
+                            // zwykłe pole tła
+                            cell.setFillColor(sf::Color(40, 40, 40));
+                        }
+                        __sfml_window->draw(cell);
+                    }
+                }
+
+                // Rysuj zamknięte kratki (przetworzone)
+                for (auto &k : zamknieta) {
+                    sf::RectangleShape cell(sf::Vector2f(cellSize - 1, cellSize - 1));
+                    // pamiętaj: k.x -> wiersz (row), k.y -> kolumna (col)
+                    cell.setPosition(k.y * cellSize, k.x * cellSize);
+                    cell.setFillColor(sf::Color(150, 40, 40)); // ciemnoczerwony
+                    __sfml_window->draw(cell);
+                }
+
+                // Rysuj otwarte kratki
+                for (auto &k : otwarta) {
+                    sf::RectangleShape cell(sf::Vector2f(cellSize - 1, cellSize - 1));
+                    cell.setPosition(k.y * cellSize, k.x * cellSize);
+                    cell.setFillColor(sf::Color(40, 150, 40)); // zielony
+                    __sfml_window->draw(cell);
+                }
+
+                // Rysuj aktualnie znalezioną ścieżkę (jeżeli istnieje)
+                for (auto &k : droga) {
+                    sf::RectangleShape cell(sf::Vector2f(cellSize - 1, cellSize - 1));
+                    cell.setPosition(k.y * cellSize, k.x * cellSize);
+                    cell.setFillColor(sf::Color::Yellow);
+                    __sfml_window->draw(cell);
+                }
+
+                // Start (niebieski)
+                {
+                    sf::RectangleShape s(sf::Vector2f(cellSize - 1, cellSize - 1));
+                    s.setPosition(start.y * cellSize, start.x * cellSize);
+                    s.setFillColor(sf::Color::Blue);
+                    __sfml_window->draw(s);
+                }
+
+                // Cel (magenta)
+                {
+                    sf::RectangleShape g(sf::Vector2f(cellSize - 1, cellSize - 1));
+                    g.setPosition(cel.y * cellSize, cel.x * cellSize);
+                    g.setFillColor(sf::Color::Magenta);
+                    __sfml_window->draw(g);
+                }
+
+                __sfml_window->display();
+
+                // Małe opóźnienie, żeby animacja była widoczna
+                sf::sleep(sf::milliseconds(120));
+
+                // Wyczyść drogę, żeby nie kumulowała się przy następnej iteracji
+                droga.clear();
+            }
+
+            // Jeżeli znaleziono cel lub otwarta pusta - daj chwilę na obejrzenie i zamknij okno
+            if (czy_cel_osiagniety || czy_pusta) {
+                if (__sfml_window && __sfml_window->isOpen()) {
+                    sf::sleep(sf::seconds(2));
+                    __sfml_window->close();
+                }
+            }
+        }
+        // koniec wizualizacji
