@@ -133,10 +133,12 @@ void wypisz_tablice(int h, int w, vector<vector<string>> grid) {
 }
 
 int main() {
-    start.x = 3;
-    start.y = 3;
-    cel.x = 18;
-    cel.y = 18;
+    // Miejsce na zmiane startu i celu
+    start.x = 4;
+    start.y = 19;
+    cel.x = 15;
+    cel.y = 7;
+
 
     start.g = 0;
     start.f = 0;
