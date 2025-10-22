@@ -1,0 +1,82 @@
+        // Start wizualizacji
+        #include <SFML/Graphics.hpp>
+        const int cellSize = 30;
+
+        sf::RenderWindow window(sf::VideoMode(w * cellSize, h * cellSize), "A* Wizualizacja - SFML");
+
+        while (window.isOpen()) {
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed)
+                    window.close();
+            }
+
+            // Odtworzenie aktualnej drogi
+            krata_do_szukania = aktualna_kratka;
+            while (krata_do_szukania.x != start.x || krata_do_szukania.y != start.y) {
+                droga.push_back(krata_do_szukania);
+                krata_do_szukania = znajdz_kratka(krata_do_szukania.rodzic_x, krata_do_szukania.rodzic_y);
+            }
+            droga.push_back(krata_do_szukania);
+
+            window.clear(sf::Color::Black);
+
+            for (int i = 0; i < h; i++) {
+                for (int j = 0; j < w; j++) {
+                    sf::RectangleShape rect(sf::Vector2f(cellSize - 1, cellSize - 1));
+                    rect.setPosition(j * cellSize, i * cellSize);
+
+                    if (arr[i][j] == 5)
+                        rect.setFillColor(sf::Color(80, 80, 80)); // przeszkoda
+                    else
+                        rect.setFillColor(sf::Color(40, 40, 40)); // tło
+
+                    window.draw(rect);
+                }
+            }
+
+            // Zamknięte kratki
+            for (auto& k : zamknieta) {
+                sf::RectangleShape rect(sf::Vector2f(cellSize - 1, cellSize - 1));
+                rect.setPosition(k.y * cellSize, k.x * cellSize);
+                rect.setFillColor(sf::Color(100, 0, 0));
+                window.draw(rect);
+            }
+
+            // Otwarte kratki
+            for (auto& k : otwarta) {
+                sf::RectangleShape rect(sf::Vector2f(cellSize - 1, cellSize - 1));
+                rect.setPosition(k.y * cellSize, k.x * cellSize);
+                rect.setFillColor(sf::Color(0, 100, 0));
+                window.draw(rect);
+            }
+
+            // Ścieżka
+            for (auto& k : droga) {
+                sf::RectangleShape rect(sf::Vector2f(cellSize - 1, cellSize - 1));
+                rect.setPosition(k.y * cellSize, k.x * cellSize);
+                rect.setFillColor(sf::Color::Yellow);
+                window.draw(rect);
+            }
+
+            // Start i cel
+            sf::RectangleShape startRect(sf::Vector2f(cellSize - 1, cellSize - 1));
+            startRect.setPosition(start.y * cellSize, start.x * cellSize);
+            startRect.setFillColor(sf::Color::Blue);
+            window.draw(startRect);
+
+            sf::RectangleShape goalRect(sf::Vector2f(cellSize - 1, cellSize - 1));
+            goalRect.setPosition(cel.y * cellSize, cel.x * cellSize);
+            goalRect.setFillColor(sf::Color::Magenta);
+            window.draw(goalRect);
+
+            window.display();
+
+            sf::sleep(sf::milliseconds(150)); // tempo animacji
+
+            droga.clear();
+
+            if (czy_cel_osiagniety || czy_pusta)
+                sf::sleep(sf::seconds(2)), window.close();
+        }
+        // koniec wizualizacji
